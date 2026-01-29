@@ -1,0 +1,4 @@
+# Trellis Configuration
+
+# Language for documentation (en/zh)
+language: {{LANGUAGE}}

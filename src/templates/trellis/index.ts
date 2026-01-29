@@ -75,6 +75,7 @@ export const createBootstrapScript = readTemplate(
 export const workflowMdTemplate = readTemplate("workflow.md");
 export const worktreeYamlTemplate = readTemplate("worktree.yaml");
 export const gitignoreTemplate = readTemplate("gitignore.txt");
+export const configYamlTemplate = readTemplate("config.yaml.txt");
 
 /**
  * Get all script templates as a map of relative path to content

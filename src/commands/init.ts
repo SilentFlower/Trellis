@@ -26,6 +26,12 @@ import {
   type ProjectType,
 } from "../utils/project-detector.js";
 import { initializeHashes } from "../utils/template-hash.js";
+import { isValidLanguage, saveConfig } from "../utils/config.js";
+import {
+  DEFAULT_LANGUAGE,
+  SUPPORTED_LANGUAGES,
+  type SupportedLanguage,
+} from "../constants/languages.js";
 
 interface InitOptions {
   cursor?: boolean;
@@ -35,6 +41,7 @@ interface InitOptions {
   user?: string;
   force?: boolean;
   skipExisting?: boolean;
+  lang?: string;
 }
 
 interface InitAnswers {
@@ -52,6 +59,21 @@ export async function init(options: InitOptions): Promise<void> {
       "\n   All-in-one AI framework & toolkit for Claude Code & Cursor\n",
     ),
   );
+
+  // Validate and parse language option
+  let language: SupportedLanguage = DEFAULT_LANGUAGE;
+  if (options.lang) {
+    if (isValidLanguage(options.lang)) {
+      language = options.lang;
+    } else {
+      console.log(
+        chalk.yellow(
+          `Warning: Invalid language "${options.lang}". Supported: ${SUPPORTED_LANGUAGES.join(", ")}. Using default: ${DEFAULT_LANGUAGE}`,
+        ),
+      );
+    }
+  }
+  console.log(chalk.blue("🌐 Language:"), chalk.gray(language));
 
   // Set write mode based on options
   let writeMode: WriteMode = "ask";
@@ -177,7 +199,10 @@ export async function init(options: InitOptions): Promise<void> {
   // Create workflow structure with project type
   // Multi-agent is enabled by default
   console.log(chalk.blue("📁 Creating workflow structure..."));
-  await createWorkflowStructure(cwd, { projectType, multiAgent: true });
+  await createWorkflowStructure(cwd, { projectType, multiAgent: true, language });
+
+  // Save configuration file
+  saveConfig(cwd, { language });
 
   // Write version file for update tracking
   const versionPath = path.join(cwd, DIR_NAMES.WORKFLOW, ".version");

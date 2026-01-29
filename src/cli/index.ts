@@ -101,6 +101,7 @@ program
   )
   .option("-f, --force", "Overwrite existing files without asking")
   .option("-s, --skip-existing", "Skip existing files without asking")
+  .option("--lang <language>", "Language for documentation (en/zh)", "en")
   .action(async (options: Record<string, unknown>) => {
     try {
       await init(options);

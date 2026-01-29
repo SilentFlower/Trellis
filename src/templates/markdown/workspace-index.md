@@ -120,4 +120,4 @@ Use this template when recording sessions:
 
 ---
 
-**Language**: All documentation must be written in **English**.
+**Language**: {{LANGUAGE_PROMPT}}

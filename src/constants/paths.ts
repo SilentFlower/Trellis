@@ -35,6 +35,8 @@ export const FILE_NAMES = {
   WORKFLOW_GUIDE: "workflow.md",
   /** Journal file prefix */
   JOURNAL_PREFIX: "journal-",
+  /** Configuration file */
+  CONFIG: "config.yaml",
 } as const;
 
 // Constructed paths (relative to project root)
@@ -55,6 +57,8 @@ export const PATHS = {
   CURRENT_TASK_FILE: `${DIR_NAMES.WORKFLOW}/${FILE_NAMES.CURRENT_TASK}`,
   /** .trellis/workflow.md */
   WORKFLOW_GUIDE_FILE: `${DIR_NAMES.WORKFLOW}/${FILE_NAMES.WORKFLOW_GUIDE}`,
+  /** .trellis/config.yaml */
+  CONFIG_FILE: `${DIR_NAMES.WORKFLOW}/${FILE_NAMES.CONFIG}`,
 } as const;
 
 /**

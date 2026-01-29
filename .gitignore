@@ -159,3 +159,7 @@ __pycache__/
 .trellis/tasks/01-23-eng-blog-research
 
 doc/
+
+# Idea
+.idea/
+

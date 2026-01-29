@@ -8,6 +8,11 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  LANGUAGE_PLACEHOLDER,
+  LANGUAGE_PROMPTS,
+  type SupportedLanguage,
+} from "../../constants/languages.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -95,3 +100,23 @@ export const guidesCrossLayerThinkingGuideContent: string = readLocalTemplate(
 export const guidesCodeReuseThinkingGuideContent: string = readLocalTemplate(
   "spec/guides/code-reuse-thinking-guide.md.txt",
 );
+
+// =============================================================================
+// Template processing utilities
+// =============================================================================
+
+/**
+ * 处理模板中的语言占位符
+ *
+ * 将模板中的 {{LANGUAGE_PROMPT}} 替换为对应语言的提示文本
+ *
+ * @param template - 包含占位符的模板内容
+ * @param language - 目标语言
+ * @returns 替换后的模板内容
+ */
+export function processTemplate(
+  template: string,
+  language: SupportedLanguage,
+): string {
+  return template.replace(LANGUAGE_PLACEHOLDER, LANGUAGE_PROMPTS[language]);
+}

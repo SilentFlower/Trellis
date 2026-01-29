@@ -32,10 +32,16 @@ import {
   guidesIndexContent,
   guidesCrossLayerThinkingGuideContent,
   guidesCodeReuseThinkingGuideContent,
+  // Template processing
+  processTemplate,
 } from "../templates/markdown/index.js";
 
 import { writeFile, ensureDir } from "../utils/file-writer.js";
 import type { ProjectType } from "../utils/project-detector.js";
+import {
+  DEFAULT_LANGUAGE,
+  type SupportedLanguage,
+} from "../constants/languages.js";
 
 interface DocDefinition {
   name: string;
@@ -50,6 +56,8 @@ export interface WorkflowOptions {
   projectType: ProjectType;
   /** Enable multi-agent pipeline with worktree support */
   multiAgent?: boolean;
+  /** Language for documentation */
+  language?: SupportedLanguage;
 }
 
 /**
@@ -72,6 +80,7 @@ export async function createWorkflowStructure(
 ): Promise<void> {
   const projectType = options?.projectType ?? "fullstack";
   const multiAgent = options?.multiAgent ?? false;
+  const language = options?.language ?? DEFAULT_LANGUAGE;
 
   // Create base .trellis directory
   ensureDir(path.join(cwd, DIR_NAMES.WORKFLOW));
@@ -97,7 +106,7 @@ export async function createWorkflowStructure(
   ensureDir(path.join(cwd, PATHS.WORKSPACE));
   await writeFile(
     path.join(cwd, PATHS.WORKSPACE, "index.md"),
-    agentProgressIndexContent,
+    processTemplate(agentProgressIndexContent, language),
   );
 
   // Create tasks/ directory
@@ -113,12 +122,13 @@ export async function createWorkflowStructure(
 
   // Create spec templates based on project type
   // These are NOT dogfooded - they are generic templates for new projects
-  await createSpecTemplates(cwd, projectType);
+  await createSpecTemplates(cwd, projectType, language);
 }
 
 async function createSpecTemplates(
   cwd: string,
   projectType: ProjectType,
+  language: SupportedLanguage,
 ): Promise<void> {
   // Ensure spec directory exists
   ensureDir(path.join(cwd, PATHS.SPEC));
@@ -152,7 +162,7 @@ async function createSpecTemplates(
   ) {
     ensureDir(path.join(cwd, `${PATHS.SPEC}/backend`));
     const backendDocs: DocDefinition[] = [
-      { name: "index.md", content: backendIndexContent },
+      { name: "index.md", content: processTemplate(backendIndexContent, language) },
       {
         name: "directory-structure.md",
         content: backendDirectoryStructureContent,
@@ -188,7 +198,7 @@ async function createSpecTemplates(
   ) {
     ensureDir(path.join(cwd, `${PATHS.SPEC}/frontend`));
     const frontendDocs: DocDefinition[] = [
-      { name: "index.md", content: frontendIndexContent },
+      { name: "index.md", content: processTemplate(frontendIndexContent, language) },
       {
         name: "directory-structure.md",
         content: frontendDirectoryStructureContent,

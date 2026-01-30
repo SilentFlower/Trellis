@@ -43,6 +43,15 @@ interface DocDefinition {
 }
 
 /**
+ * 语言代码到完整语言名称的映射
+ * Language code to full language name mapping
+ */
+const LANGUAGE_MAP: Record<string, string> = {
+  en: "English",
+  zh: "Chinese",
+};
+
+/**
  * Options for creating workflow structure
  */
 export interface WorkflowOptions {
@@ -50,6 +59,8 @@ export interface WorkflowOptions {
   projectType: ProjectType;
   /** Enable multi-agent pipeline with worktree support */
   multiAgent?: boolean;
+  /** Documentation language (en or zh), defaults to en */
+  language?: string;
 }
 
 /**
@@ -72,6 +83,7 @@ export async function createWorkflowStructure(
 ): Promise<void> {
   const projectType = options?.projectType ?? "fullstack";
   const multiAgent = options?.multiAgent ?? false;
+  const language = options?.language ?? "en";
 
   // Create base .trellis directory
   ensureDir(path.join(cwd, DIR_NAMES.WORKFLOW));
@@ -113,12 +125,29 @@ export async function createWorkflowStructure(
 
   // Create spec templates based on project type
   // These are NOT dogfooded - they are generic templates for new projects
-  await createSpecTemplates(cwd, projectType);
+  await createSpecTemplates(cwd, projectType, language);
+}
+
+/**
+ * 根据语言设置替换文档中的语言说明
+ * Replace language statement in documentation based on language setting
+ *
+ * @param content - 原始内容 / Original content
+ * @param language - 语言代码 (en/zh) / Language code (en/zh)
+ * @returns 替换后的内容 / Content with replaced language statement
+ */
+function applyLanguage(content: string, language: string): string {
+  const langName = LANGUAGE_MAP[language] || "English";
+  return content.replace(
+    /\*\*Language\*\*: All documentation should be written in \*\*English\*\*\./g,
+    `**Language**: All documentation should be written in **${langName}**.`,
+  );
 }
 
 async function createSpecTemplates(
   cwd: string,
   projectType: ProjectType,
+  language: string,
 ): Promise<void> {
   // Ensure spec directory exists
   ensureDir(path.join(cwd, PATHS.SPEC));
@@ -152,7 +181,7 @@ async function createSpecTemplates(
   ) {
     ensureDir(path.join(cwd, `${PATHS.SPEC}/backend`));
     const backendDocs: DocDefinition[] = [
-      { name: "index.md", content: backendIndexContent },
+      { name: "index.md", content: applyLanguage(backendIndexContent, language) },
       {
         name: "directory-structure.md",
         content: backendDirectoryStructureContent,
@@ -188,7 +217,7 @@ async function createSpecTemplates(
   ) {
     ensureDir(path.join(cwd, `${PATHS.SPEC}/frontend`));
     const frontendDocs: DocDefinition[] = [
-      { name: "index.md", content: frontendIndexContent },
+      { name: "index.md", content: applyLanguage(frontendIndexContent, language) },
       {
         name: "directory-structure.md",
         content: frontendDirectoryStructureContent,

@@ -41,6 +41,14 @@ interface InitAnswers {
   tools: string[];
 }
 
+/**
+ * 语言选择交互结果
+ * Language selection interaction result
+ */
+interface LanguageAnswers {
+  language: string;
+}
+
 export async function init(options: InitOptions): Promise<void> {
   const cwd = process.cwd();
 
@@ -105,16 +113,18 @@ export async function init(options: InitOptions): Promise<void> {
 
   let tools: string[];
   let projectType: ProjectType = detectedType;
+  let language = "zh"; // 默认语言 / Default language
 
   if (options.yes) {
-    // Default: both Cursor and Claude
+    // Default: both Cursor and Claude, Chinese language
     tools = ["cursor", "claude"];
+    language = "zh";
     // Treat unknown as fullstack
     if (detectedType === "unknown") {
       projectType = "fullstack";
     }
   } else if (options.cursor || options.claude) {
-    // Use flags
+    // Use flags - still need to ask for language
     tools = [];
     if (options.cursor) {
       tools.push("cursor");
@@ -130,8 +140,37 @@ export async function init(options: InitOptions): Promise<void> {
     if (detectedType === "unknown") {
       projectType = "fullstack";
     }
+
+    // 语言选择交互 / Language selection interaction
+    const languageAnswers = await inquirer.prompt<LanguageAnswers>([
+      {
+        type: "list",
+        name: "language",
+        message: "Select documentation language / 选择文档语言:",
+        choices: [
+          { name: "Chinese (中文)", value: "zh" },
+          { name: "English", value: "en" },
+        ],
+        default: "zh",
+      },
+    ]);
+    language = languageAnswers.language;
   } else {
-    // Interactive mode
+    // Interactive mode - 先选择语言，再选择工具 / Select language first, then tools
+    const languageAnswers = await inquirer.prompt<LanguageAnswers>([
+      {
+        type: "list",
+        name: "language",
+        message: "Select documentation language / 选择文档语言:",
+        choices: [
+          { name: "Chinese (中文)", value: "zh" },
+          { name: "English", value: "en" },
+        ],
+        default: "zh",
+      },
+    ]);
+    language = languageAnswers.language;
+
     const questions: {
       type: string;
       name: string;
@@ -174,10 +213,14 @@ export async function init(options: InitOptions): Promise<void> {
 
   // Silent - no "Configuring" output
 
-  // Create workflow structure with project type
+  // Create workflow structure with project type and language
   // Multi-agent is enabled by default
   console.log(chalk.blue("📁 Creating workflow structure..."));
-  await createWorkflowStructure(cwd, { projectType, multiAgent: true });
+  await createWorkflowStructure(cwd, { projectType, multiAgent: true, language });
+
+  // Write config.yml with language setting
+  const configPath = path.join(cwd, DIR_NAMES.WORKFLOW, "config.yml");
+  fs.writeFileSync(configPath, `language: ${language}\n`);
 
   // Write version file for update tracking
   const versionPath = path.join(cwd, DIR_NAMES.WORKFLOW, ".version");
